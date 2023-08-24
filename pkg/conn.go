@@ -5,56 +5,40 @@ package ftp
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 
 import (
-	"errors"
 	"net"
-	"os"
-
-	"github.com/MakaroffAV/tradesu-libs-cls/pkg/cls"
 )
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 
 var (
-	errNoConnParam = errors.New("error, conn param does not exist in env storage")
+	ftpAddr string = "ftp.zakupki.gov.ru:21"
 )
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 
-func createConn() {
-
+type FtpConn struct {
+	conn net.Conn
 }
 
-// ------------------------------------------------------------------------ //
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 
-func deleteConn(conn net.Conn) {
-
-}
-
-// ------------------------------------------------------------------------ //
-
-// getConnParam is
-// private function for
-// fetching conn param for FTP server
-func getConnParam(key string) (string, error) {
-
-	if p := os.Getenv(key); p != "" {
-		cls.Info(
-			cls.Log{
-				Msg: "fetching FTP conn param done",
-				Add: map[string]string{"connParam": key},
-			},
-		)
-		return p, nil
-	} else {
-		cls.Fail(
-			cls.Log{
-				Err: errNoConnParam,
-				Msg: "fetching FTP conn param fail",
-				Add: map[string]string{"connParam": key},
-			},
-		)
-		return p, errNoConnParam
+func (f FtpConn) Delete() error {
+	if err := f.conn.Close(); err != nil {
+		panic(err)
 	}
+	return nil
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
+
+func createFtpConn() (*FtpConn, error) {
+
+	c, cErr := net.Dial("tcp", ftpAddr)
+	if cErr != nil {
+		panic(cErr)
+	}
+
+	return &FtpConn{conn: c}, nil
 
 }
 
