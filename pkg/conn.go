@@ -5,40 +5,36 @@ package ftp
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 
 import (
-	"net"
-)
-
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-
-var (
-	ftpAddr string = "ftp.zakupki.gov.ru:21"
+	"github.com/jlaffaye/ftp"
 )
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 
 type FtpConn struct {
-	conn net.Conn
+	c *ftp.ServerConn
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 
-func (f FtpConn) Delete() error {
-	if err := f.conn.Close(); err != nil {
-		panic(err)
-	}
-	return nil
+func (fc FtpConn) DelFtpConn() error {
+	return fc.c.Quit()
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 
-func createFtpConn() (*FtpConn, error) {
+func NewFtpConn(a string, u string, p string) (*FtpConn, error) {
 
-	c, cErr := net.Dial("tcp", ftpAddr)
+	c, cErr := ftp.Dial(a)
 	if cErr != nil {
-		panic(cErr)
+		return nil, cErr
 	}
 
-	return &FtpConn{conn: c}, nil
+	lErr := c.Login(u, p)
+	if lErr != nil {
+		return nil, lErr
+	}
+
+	return &FtpConn{c: c}, nil
 
 }
 
